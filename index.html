@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8' />
+		<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+		<meta name="description" content="Books Catalog" />
+		<title>Books Catalog</title>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+	</head>
+	<body style>
+		<div class="container">
+			<div class="row">
+				<h1>Books Catalog</h1>
+				<p class="lead">Here it is! Deluxe Books Catalog!</p>
+			</div>
+			<div id="book-catalog">
+				<div class="row btn-group" data-toggle="buttons" style="margin-bottom:10px;">
+				  <button type="button" class="sort btn btn-default" data-sort="author">Author</button>
+				  <button type="button" class="sort btn btn-default" data-sort="title">Title</button>
+				</div>
+				<div class="row" style="margin-bottom:10px;">
+					<input type="text" class="search form-control" placeholder="Search" />
+				</div>
+				<ul class="row list-group list">
+  					
+  				</ul>
+			</div>
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+		<script src="http://listjs.com/no-cdn/list.js"></script>
+		<script type="text/javascript">
+			var options = {
+		  	valueNames: [ 'author', 'title' ],
+		  	item: '<li class="list-group-item"><span class="author"></span>, <span class="title"></span></li>'
+			};
+			var values = [{
+			    author: "Robert Ludlum",
+		    	title: "Zemsta Bourne'a"
+		  	}];
+			var booksCatalog = new List('book-catalog', options, values);
+			booksCatalog.add({
+		  	author: "Stephen King",
+		  	title: "To"
+			});
+		</script>
+	</body>
+</html>
