@@ -39,6 +39,7 @@
 				<input type="text" id="author-field" class="form-control" placeholder="Author" />
 				<input type="text" id="title-field" class="form-control" placeholder="Title" />
 				<button id="add-btn" class="btn btn-primary">Add</button>
+				<button id="clean-btn" class="btn btn-default">Clean</button>
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -55,6 +56,7 @@
 			loadBooksFromLocalStorage();
 			
 			var addBtn = $('#add-btn'),
+				cleanBtn = $('#clean-btn'),
 				authorField = $('#author-field'),
 				titleField = $('#title-field');
 			    
@@ -65,6 +67,12 @@
 			  });
 			  persistAllBooksInLocalStorage()
 			  clearFields();
+			});
+
+			cleanBtn.click(function() {
+			  clearFields();
+			  localStorage.clear();
+			  location.reload();
 			});
 
 			function clearFields() {
