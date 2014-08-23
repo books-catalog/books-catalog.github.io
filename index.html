@@ -8,6 +8,12 @@
 		<title>Books Catalog</title>
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+		<style>
+			label.asc::after { content: "\25b4  "; }
+			label.desc::after { content: "\25be  "; }
+			span.title { font-style: italic; }
+			div.add-new-book > input {  width: 30%; margin-right: 15px; }
+		</style>
 	</head>
 	<body style>
 		<div class="container">
@@ -17,15 +23,22 @@
 			</div>
 			<div id="book-catalog">
 				<div class="row btn-group" data-toggle="buttons" style="margin-bottom:10px;">
-				  <button type="button" class="sort btn btn-default" data-sort="author">Author</button>
-				  <button type="button" class="sort btn btn-default" data-sort="title">Title</button>
+					<label class="sort active btn btn-default" data-sort="author">
+						<input type="radio" name="options" id="author" />Author
+					</label>
+					<label class="sort btn btn-default" data-sort="title">
+						<input type="radio" name="options" id="title" />Title
+					</label>
 				</div>
 				<div class="row" style="margin-bottom:10px;">
-					<input type="text" class="search form-control" placeholder="Search" />
+					<input type="text" class="search form-control" placeholder="Search in all" style="width: 50%" />
 				</div>
-				<ul class="row list-group list">
-  					
-  				</ul>
+				<ul class="row list-group list"></ul>
+			</div>
+			<div class="row add-new-book">
+				<input type="text" id="author-field" class="form-control" placeholder="Author" />
+				<input type="text" id="title-field" class="form-control" placeholder="Title" />
+				<button id="add-btn" class="btn btn-primary">Add</button>
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -33,18 +46,49 @@
 		<script src="http://listjs.com/no-cdn/list.js"></script>
 		<script type="text/javascript">
 			var options = {
-		  	valueNames: [ 'author', 'title' ],
-		  	item: '<li class="list-group-item"><span class="author"></span>, <span class="title"></span></li>'
+				valueNames: [ 'author', 'title' ],
+				item: '<li class="list-group-item"><span class="author"></span>, <span class="title"></span></li>'
 			};
-			var values = [{
-			    author: "Robert Ludlum",
-		    	title: "Zemsta Bourne'a"
-		  	}];
-			var booksCatalog = new List('book-catalog', options, values);
-			booksCatalog.add({
-		  	author: "Stephen King",
-		  	title: "To"
+
+			var booksCatalog = new List('book-catalog', options);
+
+			loadBooksFromLocalStorage();
+			
+			var addBtn = $('#add-btn'),
+				authorField = $('#author-field'),
+				titleField = $('#title-field');
+			    
+			addBtn.click(function() {
+			  booksCatalog.add({
+			    author: authorField.val(),
+			    title: titleField.val()
+			  });
+			  persistAllBooksInLocalStorage()
+			  clearFields();
 			});
+
+			function clearFields() {
+			  authorField.val('');
+			  titleField.val('');
+			}
+
+			function persistAllBooksInLocalStorage() {
+				$.each(booksCatalog.items, function( index, value ) {
+					putBookInLocalStorage(index, value);
+				});
+			}
+
+			function putBookInLocalStorage(index, value) { localStorage.setItem('BOOK_' + pad(index), JSON.stringify(value.values())); }
+
+			function pad(num) { return '000000' + num; }
+
+			function loadBooksFromLocalStorage() {
+				localStorage.setItem('BOOK_0000000', "{\"author\":\"Stephen King\",\"title\":\"To\"}");
+				localStorage.setItem('BOOK_0000001',"{\"author\":\"Robert Ludlum\",\"title\":\"Zemsta Bourne\'a\"}");
+				$.each(localStorage, function( key, value ) {
+					booksCatalog.add(JSON.parse(value));
+				});
+ 			}
 		</script>
 	</body>
 </html>
