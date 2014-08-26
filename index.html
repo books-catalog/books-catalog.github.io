@@ -46,57 +46,105 @@
 		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 		<script src="http://listjs.com/no-cdn/list.js"></script>
 		<script type="text/javascript">
-			var options = {
+
+			function BooksStorage() {
+				this.clear = function() {
+					localStorage.clear();
+				}
+				this.addBook = function(newBook) {
+					if (newBook.isValid()) {
+						if (this.isNotDuplicate(newBook.getAsJson())) {
+							booksList.add(newBook.getAsJson());
+							var arrayOfBooks = booksStorage.getBooks();
+							arrayOfBooks.push(newBook.getAsJson());
+							localStorage.setItem('arrayOfBooks', JSON.stringify(arrayOfBooks));
+						} else {
+							console.log('Book "' + newBook.getBiblio() + '" is a duplicate.')
+						}
+					} else {
+						console.log('Book "' + newBook.getBiblio() + '" is not valid.')
+					}
+				}
+				this.getBooks = function() {
+					var booksAlreadyInCatalog = localStorage.getItem('arrayOfBooks');
+					return ( booksAlreadyInCatalog === null ? new Array() : JSON.parse(booksAlreadyInCatalog) );
+				}
+				this.isNotDuplicate = function(newBook) {
+					/*
+					console.log('booksStorage.getBooks() (size ' + arrayOfBooks.length + '):');
+					for (var i = 0; i < arrayOfBooks.length; i++) {
+						console.log(arrayOfBooks[i]);
+					}
+					console.log('adding newBook: ', newBook.author, newBook.title);
+					*/
+					return true;
+				}
+			}
+
+			function Book(author, title) {
+				this.author = author;
+				this.title = title;
+				this.getBiblio = function() {
+					return author + ', ' + title;
+				}
+				this.getAsJson = function() {
+					return { "author": author, "title": title };
+				}
+				this.isValid = function() {
+					return ( author && title );
+				}
+			}
+			
+			var booksListOptions = {
 				valueNames: [ 'author', 'title' ],
 				item: '<li class="list-group-item"><span class="author"></span>, <span class="title"></span></li>'
 			};
 
-			var booksCatalog = new List('book-catalog', options);
+			var booksList = new List('book-catalog', booksListOptions);
 
-			loadBooksFromLocalStorage();
-			
+			var booksStorage = new BooksStorage();
+
 			var addBtn = $('#add-btn'),
 				cleanBtn = $('#clean-btn'),
 				authorField = $('#author-field'),
 				titleField = $('#title-field');
 			    
 			addBtn.click(function() {
-			  booksCatalog.add({
-			    author: authorField.val(),
-			    title: titleField.val()
-			  });
-			  persistAllBooksInLocalStorage()
-			  clearFields();
+				booksStorage.addBook(new Book(authorField.val(), titleField.val()));
+				clearFields();
 			});
-
+			
 			cleanBtn.click(function() {
-			  clearFields();
-			  localStorage.clear();
-			  location.reload();
+				clearFields();
+				booksStorage.clear();
+				location.reload();
 			});
 
 			function clearFields() {
-			  authorField.val('');
-			  titleField.val('');
+				authorField.val('');
+				titleField.val('');
 			}
 
-			function persistAllBooksInLocalStorage() {
-				$.each(booksCatalog.items, function( index, value ) {
-					putBookInLocalStorage(index, value);
-				});
-			}
-
-			function putBookInLocalStorage(index, value) { localStorage.setItem('BOOK_' + pad(index), JSON.stringify(value.values())); }
-
-			function pad(num) { return '000000' + num; }
-
-			function loadBooksFromLocalStorage() {
-				localStorage.setItem('BOOK_0000000', "{\"author\":\"Stephen King\",\"title\":\"To\"}");
-				localStorage.setItem('BOOK_0000001',"{\"author\":\"Robert Ludlum\",\"title\":\"Zemsta Bourne\'a\"}");
-				$.each(localStorage, function( key, value ) {
-					booksCatalog.add(JSON.parse(value));
-				});
+			function loadBooksFromBooksStorage() {
+				var existedBooks = booksStorage.getBooks();
+				if (existedBooks.length > 0) {
+					booksList.add(existedBooks);
+				} else {
+					putSomeTestBooks();
+				}
  			}
+
+ 			function putSomeTestBooks() {
+ 				booksStorage.addBook(new Book("Stephen King", "To"));
+ 				booksStorage.addBook(new Book("Robert Ludlum", "Zemsta Bourne'a"));
+ 			}
+
+ 			loadBooksFromBooksStorage();
+
+			// TODO - avoid duplicate
+ 			// TODO - show some alert when adding book went wrong
+			// TODO - add more than one book of same author
+			// TODO - autocomplete (search?) during adding new book
 		</script>
 	</body>
 </html>
