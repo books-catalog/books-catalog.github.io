@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
@@ -6,7 +5,6 @@
 		<meta http-equiv="X-UA-Compatible" content="chrome=1" />
 		<meta name="description" content="Books Catalog" />
 		<title>Books Catalog</title>
-		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
 		<style>
 			label.asc::after { content: "\25b4  "; }
@@ -55,11 +53,11 @@
 					if (newBook.isValid()) {
 						if (this.isNotDuplicate(newBook)) {
 							booksList.add(newBook.getAsJson());
-							var arrayOfBooks = booksStorage.getBooks();
+							var arrayOfBooks = this.getBooks();
 							arrayOfBooks.push(newBook.getAsJson());
 							localStorage.setItem('arrayOfBooks', JSON.stringify(arrayOfBooks));
 						} else {
-							console.log('Book "' + newBook.getBiblio() + '" is a duplicate.')
+							console.log('Book "' + newBook.getBiblio() + '" already exists.')
 						}
 					} else {
 						console.log('Book "' + newBook.getBiblio() + '" is not valid.')
@@ -70,11 +68,12 @@
 					return ( booksAlreadyInCatalog === null ? new Array() : JSON.parse(booksAlreadyInCatalog) );
 				}
 				this.isNotDuplicate = function(newBook) {
-					/*console.log('Adding book "' + newBook.getBiblio() + '".')
-					console.log('booksStorage.getBooks() (size ' + arrayOfBooks.length + '):');
+					var arrayOfBooks = this.getBooks();
 					for (var i = 0; i < arrayOfBooks.length; i++) {
-						console.log(arrayOfBooks[i]);
-					}*/
+						if (newBook.isTheSameAs(arrayOfBooks[i])) {
+							return false;
+						}
+					}
 					return true;
 				}
 			}
@@ -90,6 +89,9 @@
 				}
 				this.isValid = function() {
 					return ( author && title );
+				}
+				this.isTheSameAs = function(newBook) {
+					return ( author == newBook.author && title == newBook.title );
 				}
 			}
 			
