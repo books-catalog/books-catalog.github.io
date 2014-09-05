@@ -10,8 +10,6 @@
 			label.asc::after { content: "\25b4  "; }
 			label.desc::after { content: "\25be  "; }
 			span.title { font-style: italic; }
-			div.add-new-book { width: 30%; }
-			div.add-new-book > input { margin-bottom: 20px; }
 		</style>
 	</head>
 	<body style>
@@ -34,12 +32,17 @@
 				</div>
 				<ul class="row list-group list"></ul>
 			</div>			
-			<hr />
-			<div class="row add-new-book">
-				<div class="alert alert-danger" id="addingBookAlert" style="display: none;">ALERT MESSAGE</div>
-				<input type="text" id="author-field" class="form-control" placeholder="Author" />
-				<input type="text" id="title-field" class="form-control" placeholder="Title" />
-				<button id="add-btn" class="btn btn-primary">Add</button>
+			<div class="row form-inline">
+				<div class="alert alert-danger" id="addingBookAlert" style="display: none;"><span></span><span class="close">&times;</span></div>
+				<div class="form-group">
+        		    <label class="sr-only" for="inputAuthor">Author</label>
+            		<input type="text" class="form-control" id="inputAuthor" placeholder="Author">
+        		</div>
+        		<div class="form-group">
+            		<label class="sr-only" for="inputTitle">Title</label>
+            		<input type="text" class="form-control" id="inputTitle" placeholder="Title">
+        		</div>
+        		<button id="add-btn" class="btn btn-primary">Add</button>
 				<button id="clean-btn" class="btn btn-default">Clean</button>
 			</div>
 		</div>
@@ -110,9 +113,9 @@
 
 			var addBtn = $('#add-btn'),
 				cleanBtn = $('#clean-btn'),
-				authorField = $('#author-field'),
-				titleField = $('#title-field'),
-				addingBookAlert = $("#addingBookAlert");
+				authorField = $('#inputAuthor'),
+				titleField = $('#inputTitle'),
+				addingBookAlert = $('#addingBookAlert');
 			    
 			addBtn.click(function() {
 				booksStorage.addBook(new Book(authorField.val(), titleField.val()));
@@ -120,7 +123,7 @@
 			});
 			
 			addingBookAlert.click(function() {
-				addingBookAlert.hide();
+				addingBookAlert.fadeOut();
 			});
 			
 			cleanBtn.click(function() {
@@ -131,8 +134,8 @@
 			
 			function showAlert(message) {
 				if (message) {
-					addingBookAlert.text(message);
-					addingBookAlert.show();
+					addingBookAlert.find('span:first').text(message);
+					addingBookAlert.fadeIn();
 				} else {
 					addingBookAlert.hide();
 				}
