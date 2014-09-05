@@ -10,7 +10,8 @@
 			label.asc::after { content: "\25b4  "; }
 			label.desc::after { content: "\25be  "; }
 			span.title { font-style: italic; }
-			div.add-new-book > input {  width: 30%; margin-right: 15px; }
+			div.add-new-book { width: 30%; }
+			div.add-new-book > input { margin-bottom: 20px; }
 		</style>
 	</head>
 	<body style>
@@ -32,8 +33,10 @@
 					<input type="text" class="search form-control" placeholder="Search in all" style="width: 50%" />
 				</div>
 				<ul class="row list-group list"></ul>
-			</div>
+			</div>			
+			<hr />
 			<div class="row add-new-book">
+				<div class="alert alert-danger" id="addingBookAlert" style="display: none;">ALERT MESSAGE</div>
 				<input type="text" id="author-field" class="form-control" placeholder="Author" />
 				<input type="text" id="title-field" class="form-control" placeholder="Title" />
 				<button id="add-btn" class="btn btn-primary">Add</button>
@@ -56,11 +59,12 @@
 							var arrayOfBooks = this.getBooks();
 							arrayOfBooks.push(newBook.getAsJson());
 							localStorage.setItem('arrayOfBooks', JSON.stringify(arrayOfBooks));
+							showAlert();
 						} else {
-							console.log('Book "' + newBook.getBiblio() + '" already exists.')
+							showAlert('Book "' + newBook.getBiblio() + '" already exists.');
 						}
 					} else {
-						console.log('Book "' + newBook.getBiblio() + '" is not valid.')
+						showAlert('Book "' + newBook.getBiblio() + '" is not valid.');
 					}
 				}
 				this.getBooks = function() {
@@ -107,11 +111,16 @@
 			var addBtn = $('#add-btn'),
 				cleanBtn = $('#clean-btn'),
 				authorField = $('#author-field'),
-				titleField = $('#title-field');
+				titleField = $('#title-field'),
+				addingBookAlert = $("#addingBookAlert");
 			    
 			addBtn.click(function() {
 				booksStorage.addBook(new Book(authorField.val(), titleField.val()));
 				clearFields();
+			});
+			
+			addingBookAlert.click(function() {
+				addingBookAlert.hide();
 			});
 			
 			cleanBtn.click(function() {
@@ -119,6 +128,15 @@
 				booksStorage.clear();
 				location.reload();
 			});
+			
+			function showAlert(message) {
+				if (message) {
+					addingBookAlert.text(message);
+					addingBookAlert.show();
+				} else {
+					addingBookAlert.hide();
+				}
+			}
 
 			function clearFields() {
 				authorField.val('');
