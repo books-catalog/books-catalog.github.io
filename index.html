@@ -158,6 +158,12 @@
  			function putSomeTestBooks() {
  				booksStorage.addBook(new Book("Stephen King", "To"));
  				booksStorage.addBook(new Book("Robert Ludlum", "Zemsta Bourne'a"));
+				
+				$.getJSON('https://spreadsheets.google.com/feeds/list/14HhnDQFQfAfaZrkfc0Tc9KYtN58I1w-TH8zb7XZOo20/od6/public/full?alt=json', function(data) {
+					for (var i = 0; i < data.feed.entry.length; i++) {
+						booksStorage.addBook(new Book(data.feed.entry[i].gsx$author.$t, data.feed.entry[i].gsx$title.$t));
+					};
+				});
  			}
 
  			loadBooksFromBooksStorage();
