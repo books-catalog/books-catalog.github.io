@@ -2,7 +2,6 @@
 <html>
 	<head>
 		<meta charset='utf-8' />
-		<meta http-equiv="X-UA-Compatible" content="chrome=1" />
 		<meta name="description" content="Books Catalog" />
 		<title>Books Catalog</title>
 		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
@@ -32,7 +31,7 @@
 				</div>
 				<ul class="row list-group list"></ul>
 			</div>			
-			<div class="row form-inline">
+			<div class="row form-inline" style="margin-bottom:20px;">
 				<div class="alert alert-danger" id="addingBookAlert" style="display: none;"><span></span><span class="close">&times;</span></div>
 				<div class="form-group">
         		    <label class="sr-only" for="inputAuthor">Author</label>
@@ -46,9 +45,16 @@
 				<button id="clean-btn" class="btn btn-default">Clean</button>
 			</div>
 		</div>
+		<div class="container">
+			<div class="row">
+				<button id="login-btn" class="btn btn-primary">Login</button>
+				<button id="logout-btn" class="btn btn-default" style="display: none;">Logout</button>
+			</div>
+		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 		<script src="http://listjs.com/no-cdn/list.js"></script>
+		<script src="http://adodson.com/hello.js/dist/hello.all.js"></script>
 		<script type="text/javascript">
 
 			function BooksStorage() {
@@ -159,14 +165,58 @@
  				booksStorage.addBook(new Book("Stephen King", "To"));
  				booksStorage.addBook(new Book("Robert Ludlum", "Zemsta Bourne'a"));
 				
-				$.getJSON('https://spreadsheets.google.com/feeds/list/14HhnDQFQfAfaZrkfc0Tc9KYtN58I1w-TH8zb7XZOo20/od6/public/full?alt=json', function(data) {
+				$.getJSON(['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(data) {
 					for (var i = 0; i < data.feed.entry.length; i++) {
 						booksStorage.addBook(new Book(data.feed.entry[i].gsx$author.$t, data.feed.entry[i].gsx$title.$t));
 					};
 				});
  			}
+			
+			var WORKSHEET_ID = '14HhnDQFQfAfaZrkfc0Tc9KYtN58I1w-TH8zb7XZOo20';
+			
+			/*<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended">
+				<gsx:author>Neil Gaiman</gsx:author>
+				<gsx:title>Sandman: Refleksje i przypowieści. Tom 6</gsx:title>
+			</entry>*/
 
  			loadBooksFromBooksStorage();
+			
+			{
+				hello.init(
+					{
+						google : '201813789790-vr3o23kmhrglno6l7sr541vc9e8rvpgl.apps.googleusercontent.com'
+					}, 
+					{
+						redirect_uri : 'http://localhost/books-catalog.github.io/index.html'
+					}
+				);
+				
+				var loginBtn = $('#login-btn'),
+					logoutBtn = $('#logout-btn')
+				;
+			    
+				loginBtn.click(function(){
+					hello('google').login();
+				});
+				
+				logoutBtn.click(function(){
+					hello('google').logout();
+				});
+				
+				hello.on('auth.login', function(auth){
+					console.log('auth.login');
+					console.log(auth);
+					loginBtn.hide();
+					logoutBtn.show();
+				});
+				
+				hello.on('auth.logout', function(auth){
+					console.log('auth.logout');
+					console.log(auth);
+					loginBtn.show();
+					logoutBtn.hide();
+				});
+			}
  			
 		</script>
 	</body>
