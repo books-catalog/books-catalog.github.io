@@ -56,6 +56,9 @@
 		<script src="http://listjs.com/no-cdn/list.js"></script>
 		<script src="http://adodson.com/hello.js/dist/hello.all.js"></script>
 		<script type="text/javascript">
+		
+			var WORKSHEET_ID = '1M_rmm9lJsWM5KMx8KJ6FDcYX7qaCxh88wPq3-FJenck';
+			var PUBLIC_WORKSHEET_ID = '1RTbkfivqsq1zGs0wCQQv9QE-v7qsBpRR4EgOimAtdC8'
 
 			function BooksStorage() {
 				this.clear = function() {
@@ -164,22 +167,9 @@
  			function putSomeTestBooks() {
  				booksStorage.addBook(new Book("Stephen King", "To"));
  				booksStorage.addBook(new Book("Robert Ludlum", "Zemsta Bourne'a"));
-				
-				$.getJSON(['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(data) {
-					for (var i = 0; i < data.feed.entry.length; i++) {
-						booksStorage.addBook(new Book(data.feed.entry[i].gsx$author.$t, data.feed.entry[i].gsx$title.$t));
-					};
-				});
  			}
 			
-			var WORKSHEET_ID = '14HhnDQFQfAfaZrkfc0Tc9KYtN58I1w-TH8zb7XZOo20';
-			
-			/*<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended">
-				<gsx:author>Neil Gaiman</gsx:author>
-				<gsx:title>Sandman: Refleksje i przypowieści. Tom 6</gsx:title>
-			</entry>*/
-
- 			loadBooksFromBooksStorage();
+			loadBooksFromBooksStorage();
 			
 			{
 				hello.init(
@@ -196,6 +186,7 @@
 				;
 			    
 				loginBtn.click(function(){
+					//hello('google').login({scope: "https://spreadsheets.google.com/feeds https://www.googleapis.com/auth/drive.file" });
 					hello('google').login();
 				});
 				
@@ -205,18 +196,59 @@
 				
 				hello.on('auth.login', function(auth){
 					console.log('auth.login');
-					console.log(auth);
 					loginBtn.hide();
 					logoutBtn.show();
+					
+					//getUserInfo();
+					//getBooksFromDrive()
+					postNewBook();
 				});
 				
 				hello.on('auth.logout', function(auth){
 					console.log('auth.logout');
-					console.log(auth);
 					loginBtn.show();
 					logoutBtn.hide();
 				});
+				
+				function getUserInfo() {
+					$.get(['https://www.googleapis.com/oauth2/v1/userinfo?','access_token=', hello.getAuthResponse('google').access_token].join(''), function(response) {
+							console.log(response);
+						}
+					);
+				}
+				
+				function postNewBook() {
+				
+					var xmlToSend = '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended"><gsx:author>Neil Gaiman</gsx:author><gsx:title>Sandman: Refleksje i przypowieści. Tom 6</gsx:title></entry>';
+					
+					$.ajax({
+						'type': 'POST',
+						'url': ['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','access_token=', hello.getAuthResponse('google').access_token].join(''),
+						'contentType': 'application/atom+xml ',
+						'data': xmlToSend,
+						'dataType': 'jsonp',
+						'success': function(response) {
+							console.log(response);
+						},
+						'disableCaching': false
+					});
+				}
+				
+				function getBooksFromDrive() {
+					$.getJSON(['https://spreadsheets.google.com/feeds/list/', PUBLIC_WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(data) {
+						for (var i = 0; i < data.feed.entry.length; i++) {
+							booksStorage.addBook(new Book(data.feed.entry[i].gsx$author.$t, data.feed.entry[i].gsx$title.$t));
+						};
+					});
+					$.getJSON(['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(response) {
+						for (var i = 0; i < response.feed.entry.length; i++) {
+							booksStorage.addBook(new Book(response.feed.entry[i].gsx$author.$t, response.feed.entry[i].gsx$title.$t));
+						};
+					});
+				}
 			}
+			
+			/*http://benjamin-schweizer.de/jquerypostjson.html*/
  			
 		</script>
 	</body>
