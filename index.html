@@ -58,8 +58,7 @@
 		<script type="text/javascript">
 		
 			var WORKSHEET_ID = '1M_rmm9lJsWM5KMx8KJ6FDcYX7qaCxh88wPq3-FJenck';
-			var PUBLIC_WORKSHEET_ID = '1RTbkfivqsq1zGs0wCQQv9QE-v7qsBpRR4EgOimAtdC8'
-
+			
 			function BooksStorage() {
 				this.clear = function() {
 					localStorage.clear();
@@ -156,11 +155,13 @@
 			}
 
 			function loadBooksFromBooksStorage() {
+				// error scenario: clear + login + logout + login
 				var existedBooks = booksStorage.getBooks();
 				if (existedBooks.length > 0) {
 					booksList.add(existedBooks);
 				} else {
 					putSomeTestBooks();
+					getBooksFromDrive();
 				}
  			}
 
@@ -168,8 +169,6 @@
  				booksStorage.addBook(new Book("Stephen King", "To"));
  				booksStorage.addBook(new Book("Robert Ludlum", "Zemsta Bourne'a"));
  			}
-			
-			loadBooksFromBooksStorage();
 			
 			{
 				hello.init(
@@ -185,9 +184,12 @@
 					logoutBtn = $('#logout-btn')
 				;
 			    
+				//var SPREADSHEET_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'; 
+				var SPREADSHEET_SCOPE = 'https://spreadsheets.google.com/feeds'; /* NONCANONICAL! działa pobieranie, nie działa wstawianie */
+				
 				loginBtn.click(function(){
-					//hello('google').login({scope: "https://spreadsheets.google.com/feeds https://www.googleapis.com/auth/drive.file" });
-					hello('google').login();
+					hello('google').login({scope: SPREADSHEET_SCOPE + " https://www.googleapis.com/auth/drive.file" });
+					//hello('google').login();
 				});
 				
 				logoutBtn.click(function(){
@@ -199,9 +201,13 @@
 					loginBtn.hide();
 					logoutBtn.show();
 					
-					//getUserInfo();
-					//getBooksFromDrive()
-					postNewBook();
+					loadBooksFromBooksStorage();
+					
+					getUserInfo();
+					
+					//postNewBook();
+					
+					//console.log(hello.getAuthResponse('google'));
 				});
 				
 				hello.on('auth.logout', function(auth){
@@ -211,7 +217,7 @@
 				});
 				
 				function getUserInfo() {
-					$.get(['https://www.googleapis.com/oauth2/v1/userinfo?','access_token=', hello.getAuthResponse('google').access_token].join(''), function(response) {
+					$.get(['https://www.googleapis.com/oauth2/v1/userinfo?',addAccessToken()].join(''), function(response) {
 							console.log(response);
 						}
 					);
@@ -221,34 +227,49 @@
 				
 					var xmlToSend = '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended"><gsx:author>Neil Gaiman</gsx:author><gsx:title>Sandman: Refleksje i przypowieści. Tom 6</gsx:title></entry>';
 					
+					//sendRequest([SPREADSHEET_SCOPE + '/list/',WORKSHEET_ID,'/od6/private/full?',addAccessToken()].join(''), xmlToSend);
 					$.ajax({
 						'type': 'POST',
-						'url': ['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','access_token=', hello.getAuthResponse('google').access_token].join(''),
-						'contentType': 'application/atom+xml ',
+						'url': [SPREADSHEET_SCOPE + '/list/',WORKSHEET_ID,'/od6/private/full?',addAccessToken()].join(''),
+						'contentType': 'application/atom+xml',
 						'data': xmlToSend,
-						'dataType': 'jsonp',
 						'success': function(response) {
 							console.log(response);
-						},
-						'disableCaching': false
+						}
 					});
 				}
 				
 				function getBooksFromDrive() {
-					$.getJSON(['https://spreadsheets.google.com/feeds/list/', PUBLIC_WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(data) {
-						for (var i = 0; i < data.feed.entry.length; i++) {
-							booksStorage.addBook(new Book(data.feed.entry[i].gsx$author.$t, data.feed.entry[i].gsx$title.$t));
-						};
-					});
-					$.getJSON(['https://spreadsheets.google.com/feeds/list/',WORKSHEET_ID,'/od6/public/full?','alt=json'].join(''), function(response) {
+					$.get([SPREADSHEET_SCOPE + '/list/',WORKSHEET_ID,'/od6/private/full?','alt=json&',addAccessToken()].join(''), function(response) {
 						for (var i = 0; i < response.feed.entry.length; i++) {
 							booksStorage.addBook(new Book(response.feed.entry[i].gsx$author.$t, response.feed.entry[i].gsx$title.$t));
 						};
 					});
 				}
+				
+				function addAccessToken() {
+					return ['access_token=', hello.getAuthResponse('google').access_token].join('');
+				}
 			}
 			
-			/*http://benjamin-schweizer.de/jquerypostjson.html*/
+			/*{
+				// http://www.quirksmode.org/js/xmlhttp.html
+				function sendRequest(url,postData) {
+					var req = new XMLHttpRequest();
+					req.open("POST", url, true);
+					req.setRequestHeader('Content-type','application/atom+xml');
+					req.onreadystatechange = function () {
+						if (req.readyState != 4) return;
+						if (req.status != 200 && req.status != 304) {
+							console.log('HTTP error ' + req.status);
+							return;
+						}
+						console.log(req);
+					}
+					if (req.readyState == 4) return;
+					req.send(postData);
+				}
+			}*/
  			
 		</script>
 	</body>
